@@ -202,49 +202,39 @@ Card 194: 53  6 40 19 13 38 47  7 26 90 | 72 64 10 92 46 65 58 99 81 40 50 61 36
 Card 195: 78 33 64 30 10 68 18 86 83 42 | 44  9 74 99 67 40 90 55 38 73 69 88  4 15  2 27 77 72 71 48 94 60 65 84 98
 Card 196: 51 64 16 76 21 48 58 99 46 69 | 79 26 55 70 20 71 44 80 97 63 29 25  1 50  8 10 78 68 61 13 36 49 84 81  6`
 
-export default async function Day4() {
+export default async function Day4PartTwo() {
   const input = puzzleInput
   const cards = input.split('\n')
+  const cardNum = cards.length
 
-  let points = 0
+  let scratchCards = 0
 
-  for (const card of cards) {
+  const copiesMap = (new Array<number>(cardNum)).fill(1)
 
-    const [winningNumberStr, myNumberStr] = card.split(': ')[1].split(' |')
+  
+  for (let i = 0; i < cardNum; i++) {
+    // console.log(`[${i}: ${copiesMap[i]}]`)
+    
+    scratchCards += copiesMap[i]
+    let j = i
+
+    const [winningNumberStr, myNumberStr] = cards[i].split(': ')[1].split(' |')
     const winningNumbers: number[] = []
 
-    let value = 0
-
-    for (let i = 0; i < 30; i += 3) {
-      winningNumbers.push(
-        parseInt(
-          winningNumberStr[i]
-          + winningNumberStr[i + 1]
-          + winningNumberStr[i + 2]
-        )
-      )
+    for (let k = 0; k < winningNumberStr.length; k += 3) {
+      winningNumbers.push(parseInt(winningNumberStr[k] + winningNumberStr[k + 1] + winningNumberStr[k + 2]))
     }
 
-    for (let i = 0; i < 75; i += 3) {
-      const currNumber = parseInt(
-        myNumberStr[i]
-        + myNumberStr[i + 1]
-        + myNumberStr[i + 2]
-      )
-      console.log(currNumber)
+    for (let k = 0; k < myNumberStr.length; k += 3) {
+      const currNumber = parseInt(myNumberStr[k] + myNumberStr[k + 1] + myNumberStr[k + 2])
       if (winningNumbers.includes(currNumber)) {
-        if (!value) {
-          value++
-        } else {
-          value *= 2
-        }
+        copiesMap[++j] += copiesMap[i]
       }
     }
 
-    points += value
   }
 
-  console.log(points)
+  console.log(scratchCards)
   console.log('\n\n\n\n\n')
 
 }
