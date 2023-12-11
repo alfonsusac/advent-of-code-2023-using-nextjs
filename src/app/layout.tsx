@@ -14,6 +14,7 @@ export default function RootLayout({
     <html lang="en" style={ {
       background: 'black',
       color: 'white',
+      overflow:'auto',
     }}>
       <body>{children}</body>
     </html>

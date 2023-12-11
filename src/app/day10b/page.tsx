@@ -1,15 +1,35 @@
-import { validateHeaderValue } from "http"
+const sample1 = `...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........`
 
-const sample1 = `.....
-.S-7.
-.|.|.
-.L-J.
-.....`
-const sample2 = `..F7.
-.FJ|.
-SJ.L7
-|F--J
-LJ...`
+const sample2 = `.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...`
+
+const sample3 = `FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L`
+
 const puzzle = `FJ77.F7F.FF.F..7-J.7F|7-7-7-7FJJ-7J-LL-7FL.F-7.F-F77F7F7-77-F--7-FF|-F-L7-|.F7|7.F-77..-FF|--F.J7..|7FFL-JJ7-F-..J77.|FFJ77L---J7F7.J-F77JJ.
 F.J-F.7--J-JJ--77J7LF77...|---|JFJ.|.|--JF-J-7FJ.FL-JJJL-JLLJF|.LF-.|L7FF.F-LJ77.--J7FF--|.-JL-77-7.L-J.|JF|FF--7LJ||J-.FLL7-FJF-7|-L-JL7J.F
 LF-FJ-77F-7L7|LLJJ..JL77-LF-JJ|J.FFLJ..LJ-|J-LJJ.|7|L|-L|JJ|-7L7LFLF-7LJ.7.|F||F-|F||LJF|L-.FLLFFJ|7FL-JL----7FL-7|L|..FJ.LJ-FJLLL7-L7|..FFJ
@@ -172,6 +192,7 @@ export default function Page() {
   }
   let S = findS()
 
+  console.log("S location")
   console.log(S)
 
   let queue: { pos: Pos, val: number }[] = []
@@ -180,6 +201,8 @@ export default function Page() {
   let maxDistCord: Pos
 
   function getDistanceAndNextPipe(y: number, x: number, value: number) {
+
+    if (y < 0 || x < 0 || y >= rows.length || x >= rows[0].length) return
 
     if (distMap[y][x]) return
 
@@ -221,42 +244,116 @@ export default function Page() {
     }
   }
 
-  // console.log(rows[S.y - 1])
+  let top = false
+  let bottom = false
+  let left = false
+  let right = false
 
-  if (['|', '7', 'F'].includes(rows[S.y - 1][S.x])) {
+  if (S.y > 0 && ['|', '7', 'F'].includes(rows[S.y - 1][S.x])) {
     console.log("Top")
+    top = true
     getDistanceAndNextPipe(S.y - 1, S.x, 1)
   }
-  if (['-', '7', 'J'].includes(rows[S.y][S.x + 1])) {
+  if (S.x < rows[0].length - 1 && ['-', '7', 'J'].includes(rows[S.y][S.x + 1])) {
     console.log("Right")
+    right = true
     getDistanceAndNextPipe(S.y, S.x + 1, 1)
   }
-  if (['-', 'L', 'F'].includes(rows[S.y][S.x - 1])) {
+  if (S.x > 0 && ['-', 'L', 'F'].includes(rows[S.y][S.x - 1])) {
     console.log("Left")
+    left = true
     getDistanceAndNextPipe(S.y, S.x - 1, 1)
   }
-  if (['|', 'L', 'J'].includes(rows[S.y + 1][S.x])) {
+  if (S.y < rows.length - 1 && ['|', 'L', 'J'].includes(rows[S.y + 1][S.x])) {
     console.log("Bottom")
+    bottom = true
     getDistanceAndNextPipe(S.y + 1, S.x, 1)
   }
+
+
 
   while (queue.length > 0) {
     const coord = queue.shift()!
     getDistanceAndNextPipe(coord.pos.y, coord.pos.x, coord.val)
   }
 
-  console.log(maxDist)
+  if (top && left) {
+    const newRow = rows[S.y].split('')
+    newRow[S.x] = 'J'
+    rows[S.y] = newRow.join('')
+  }
+  if (top && right) {
+    const newRow = rows[S.y].split('')
+    newRow[S.x] = 'L'
+    rows[S.y] = newRow.join('')
+  }
+  if (bottom && left) {
+    const newRow = rows[S.y].split('')
+    newRow[S.x] = '7'
+    rows[S.y] = newRow.join('')
+  }
+  if (bottom && right) {
+    const newRow = rows[S.y].split('')
+    newRow[S.x] = 'F'
+    rows[S.y] = newRow.join('')
+  }
 
-  return <pre style={ { lineHeight: "0.9", color: "grey" } }>{ input.split('\n').map((row, y) => {
+
+  // console.log(maxDist)
+  let insideTiles = 0
+  let barriersMap = new2DArr<undefined | boolean>(input.length, input[0].length, false)
+
+  for (let y = 0; y < rows.length; y++) {
+    let isInside = false
+    let lastBendChar
+    for (let x = 0; x < rows[0].length; x++) {
+      const currChar = rows[y][x]
+      if (isInside && distMap[y][x] === undefined) {
+        // console.log("Is Inside")
+        insideTiles++
+        distMap[y][x] = { distance: -1 }
+        continue
+      }
+      if (distMap[y][x] === undefined) {
+        continue
+      }
+      const toggleInside = () => {
+        // console.log(`Barrier Passed: ${y} ${x} ${currChar} ${isInside}`)
+        barriersMap[y][x] = true
+        isInside = !isInside
+        lastBendChar = undefined
+      }
+      if (currChar === '-') continue
+      if (currChar === '|') toggleInside()
+      if (currChar !== '|' && currChar !== '.' && lastBendChar === undefined) lastBendChar = currChar
+      if (currChar === '7' && lastBendChar === 'L') toggleInside()
+      if (currChar === 'J' && lastBendChar === 'F') toggleInside()
+      if (currChar === '7' && lastBendChar === 'F') {
+        // console.log('n')
+        lastBendChar = undefined
+      }
+      if (currChar === 'J' && lastBendChar === 'L') {
+        // console.log('u')
+        lastBendChar = undefined
+      }
+
+    }
+  }
+
+  console.log(insideTiles)
+
+  return <pre style={ { lineHeight: "1", color: "grey" } }>{ rows.map((row, y) => {
     return <>{ row.split("").map((char, x) => {
-      
+      if (distMap[y][x]?.distance === -1) {
+        return <span key={ y + x + '' } style={ { background: '#115', color: 'transparent' } }>
+          .
+        </span>
+      }
+
+
       const shade = distMap[y][x] ? ((distMap[y][x]?.distance ?? (maxDist / 3))) / maxDist : undefined
       const isFurthest = x === maxDistCord.x && y === maxDistCord.y
-      return <span key={ y + x + '' } style={ { color: isFurthest ? `gold` : `hsl(${(shade! * 400) + 240},${shade ? (shade * 50 + 20) : 0}%,${shade ? (shade * 40 + 30) : 10}%)`, position: "relative", fontWeight:'900', backgroundColor: distMap[y][x]?.distance ? '#113' : 'transparent' } }>
-        {/* {
-          (distMap[y][x] !== undefined) ? (distMap[y][x]?.distance % 0) :  
-        }
-        <span style={ { position: "absolute", fontSize: "0.1em", left: "50%", top: "50%", translate: "-50% -50%", scale:"0.8", color: "#fff8", zIndex:'0' } }>{ distMap[y][x]?.distance }</span> */}
+      return <span key={ y + x + '' } style={ { color: isFurthest ? `gold` : `hsl(${shade ? (shade * 400) + 240 : 2},${shade ? (shade * 50 + 20) : 0}%,${shade ? (shade * 40 + 30) : 5}%)`, position: "relative", fontWeight: '900', backgroundColor: barriersMap[y][x] ? '#224' : distMap[y][x]?.distance ? '#113' : 'transparent' } }>
         {
           char === "-" ? "─" :
             char === '7' ? '┐' :
@@ -266,6 +363,11 @@ export default function Page() {
                     char === "." ? <span key={ y + x + '' } style={ { opacity: '0.1' } }>.</span> :
                       char === "S" ? <span key={ y + x + '' } style={ { color: 'gold' } }>S</span> :
                         char === "F" ? "┌" : char
+        }
+        {
+          (distMap[y][x]?.distance === 0) ? <span style={{position: 'absolute', color: "white"}}>
+            S
+          </span> : null
         }
       </span>
     }) }<br /></>
@@ -292,9 +394,6 @@ class Pos {
 type distance = {
   distance: number
 }
-
-
-
 
 function new2DArr<T>(row: number, col: number, initial: T) {
   return new Array(row).fill(0).map<T[]>(() => new Array(col).fill(initial))
