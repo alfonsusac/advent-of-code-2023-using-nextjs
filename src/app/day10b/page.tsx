@@ -183,7 +183,7 @@ export default function Page() {
       for (let x = 0; x < row.length; x++) {
         const char = row[x]
         if (char === "S") {
-          distMap[y][x] = { distance: 0 }
+          distMap[y][x] = { distance: 0.5 }
           return new Pos(x, y)
         }
       }
@@ -342,35 +342,91 @@ export default function Page() {
 
   console.log(insideTiles)
 
-  return <pre style={ { lineHeight: "1", color: "grey" } }>{ rows.map((row, y) => {
-    return <>{ row.split("").map((char, x) => {
+  return <pre style={ {
+    lineHeight: "0.25",
+    letterSpacing: '-1px',
+    color: "grey",
+    padding: 10,
+  } }>{ rows.map((row, y) => {
+    return <div key={ y } style={ {
+      height: '5px',
+      letterSpacing: '-3px',
+      display: 'flex',
+    } }>{ row.split("").map((char, x) => {
       if (distMap[y][x]?.distance === -1) {
-        return <span key={ y + x + '' } style={ { background: '#115', color: 'transparent' } }>
-          .
-        </span>
+        return <div key={ y + x + '' } style={ {
+          // background: '#ccc',
+          color: 'transparent',
+          height: '7px',
+          width: '5px',
+          lineHeight: '4px',
+          // overflow: 'hidden',
+          display: 'inline-block',
+          translate: "0px -2px",
+          letterSpacing: '-3px',
+          // borderRadius: '5px',
+          // boxShadow: '0px 0px 0px 1px #bbf',
+          zIndex: 0,
+          position: 'relative'
+        } }>
+          <div style={ {
+            position: 'absolute',
+            top: 0.9,
+            left: 1.0,
+            width: '5px',
+            height: '5px',
+            overflow: 'hidden',
+            fontSize: '1.2em',
+            scale: '1',
+            color: '#338',
+          } }>
+            ■
+          </div>
+        </div>
       }
 
 
       const shade = distMap[y][x] ? ((distMap[y][x]?.distance ?? (maxDist / 3))) / maxDist : undefined
       const isFurthest = x === maxDistCord.x && y === maxDistCord.y
-      return <span key={ y + x + '' } style={ { color: isFurthest ? `gold` : `hsl(${shade ? (shade * 400) + 240 : 2},${shade ? (shade * 50 + 20) : 0}%,${shade ? (shade * 40 + 30) : 5}%)`, position: "relative", fontWeight: '900', backgroundColor: barriersMap[y][x] ? '#224' : distMap[y][x]?.distance ? '#113' : 'transparent' } }>
+      return <div key={ y + x + '' } style={ {
+        color: isFurthest ? `gold` : `hsl(${shade ? (shade * 400) + 240 : 2},${shade ? (shade * 20 + 20) : 0}%,${shade ? (shade * 40 + 40) : 20}%)`,
+        position: "relative",
+        fontWeight: '900',
+        letterSpacing: '-3px',
+        // backgroundColor: barriersMap[y][x] ? '#224' : distMap[y][x]?.distance ? '#113' : 'transparent',
+        height: '5px',
+        width: '5px',
+        // verticalAlign: '-3px',
+        overflow: 'hidden',
+        display: 'inline-block',
+        zIndex: 1,
+        opacity: shade ? 1 : 0,
+        filter: shade ? `drop-shadow(0 0 8px hsl(${shade ? (shade * 400) + 240 : 2},${shade ? (shade * 20 + 20) : 0}%,${shade ? (shade * 40 + 40) : 20}%))` : undefined
+      } }>
         {
-          char === "-" ? "─" :
-            char === '7' ? '┐' :
-              char === "L" ? '└' :
-                char === "J" ? "┘" :
-                  char === "|" ? "│" :
+          char === "-" ? "═" :
+            char === '7' ? '╗' :
+              char === "L" ? '╚' :
+                char === "J" ? "╝" :
+                  char === "|" ? "║" :
                     char === "." ? <span key={ y + x + '' } style={ { opacity: '0.1' } }>.</span> :
                       char === "S" ? <span key={ y + x + '' } style={ { color: 'gold' } }>S</span> :
-                        char === "F" ? "┌" : char
+                        char === "F" ? "╔" : char
         }
         {
-          (distMap[y][x]?.distance === 0) ? <span style={{position: 'absolute', color: "white"}}>
+          (distMap[y][x]?.distance === 0.5) ? <span style={ {
+            position: 'absolute',
+            top: 1.3,
+            left: 1,
+            fontSize: '0.5em',
+            color: 'gold',
+            zIndex: '2'
+          } }>
             S
           </span> : null
         }
-      </span>
-    }) }<br /></>
+      </div>
+    }) }<br /></div>
     6687
   }) }</pre>
 }

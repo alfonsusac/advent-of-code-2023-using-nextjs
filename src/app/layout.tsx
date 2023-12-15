@@ -12,11 +12,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" style={ {
-      background: 'black',
       color: 'white',
       overflow:'auto',
     }}>
-      <body>{children}</body>
+      <body style={ {
+        background: '#111',
+        display: 'flex',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>{children}</body>
     </html>
   )
 }
